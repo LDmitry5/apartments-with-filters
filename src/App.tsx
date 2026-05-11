@@ -23,7 +23,9 @@ const loadApartmentsData = async (
       // Продакшен: клиентская фильтрация
       await new Promise((res) => setTimeout(res, 300));
       let filtered = [...ALL_APARTMENTS];
-      if (filters.rooms.length) filtered = filtered.filter((a) => filters.rooms.includes(a.rooms));
+      if (filters.rooms.length) {
+        filtered = filtered.filter((a) => filters.rooms.some((r) => (r === 4 ? a.rooms >= 4 : a.rooms === r)));
+      }
       if (filters.layoutType) filtered = filtered.filter((a) => a.layoutType === filters.layoutType);
       if (filters.status) filtered = filtered.filter((a) => a.status === filters.status);
       if (filters.area[0] !== 15 || filters.area[1] !== 200)

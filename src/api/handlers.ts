@@ -32,14 +32,8 @@ export const handlers = [
     let filtered = apartments;
 
     if (rooms?.length) {
-      // 👇 Особая логика для "4+": если выбрано 4, ищем комнаты >= 4
-      if (rooms.includes(4)) {
-        const withoutFour = rooms.filter((r) => r !== 4);
-        filtered = filtered.filter(
-          (a) => (withoutFour.length > 0 ? withoutFour.includes(a.rooms) : true) || a.rooms >= 4,
-        );
-      } else {
-        filtered = filtered.filter((a) => rooms.includes(a.rooms));
+      if (rooms?.length) {
+        filtered = filtered.filter((a) => rooms.some((r) => (r === 4 ? a.rooms >= 4 : a.rooms === r)));
       }
     }
 
