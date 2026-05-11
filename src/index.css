@@ -1,0 +1,407 @@
+@import "tailwindcss";
+
+@theme {
+  /* Градации Primary */
+  --color-primary-50: #eff6ff;
+  --color-primary-100: #dbeafe;
+  --color-primary-200: #bfdbfe;
+  --color-primary-300: #93c5fd;
+  --color-primary-400: #60a5fa;
+  --color-primary-500: #3b82f6;
+  --color-primary-600: #2563eb;
+  --color-primary-700: #1d4ed8;
+  --color-primary-800: #1e40af;
+  --color-primary-900: #1e3a8a;
+
+  /* Градации Gray */
+  --color-gray-50: #f9fafb;
+  --color-gray-100: #f3f4f6;
+  --color-gray-200: #e5e7eb;
+  --color-gray-300: #d1d5db;
+  --color-gray-400: #9ca3af;
+  --color-gray-500: #6b7280;
+  --color-gray-600: #4b5563;
+  --color-gray-700: #374151;
+  --color-gray-800: #1f2937;
+  --color-gray-900: #111827;
+
+  /* Семантические цвета */
+  --color-success-100: #dcfce7;
+  --color-success-700: #15803d;
+  --color-warning-100: #fef3c7;
+  --color-warning-700: #92400e;
+  --color-error-100: #fee2e2;
+  --color-error-700: #b91c1c;
+
+  /* Анимации */
+  --animate-fade-in: fadeIn 0.3s ease-out;
+  --animate-slide-up: slideUp 0.3s ease-out;
+  --animate-scale-in: scaleIn 0.25s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Reset & Base */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  color: var(--color-gray-900);
+  line-height: 1.5;
+  background-color: var(--color-gray-50);
+}
+
+/* App Layout */
+.app__header {
+  @apply bg-white border-b border-gray-200 px-4 py-6 text-center sticky top-0 z-40;
+}
+.app__logo {
+  @apply text-2xl font-bold text-gray-900;
+}
+.app__subtitle {
+  @apply text-sm text-gray-500 mt-1;
+}
+
+.app__main {
+  @apply max-w-7xl mx-auto px-4 py-6 flex gap-6 flex-col lg:flex-row;
+}
+.app__content {
+  @apply flex-1 min-w-0;
+}
+.app__results {
+  @apply text-sm text-gray-500 mb-4;
+}
+.app__loading {
+  @apply flex flex-col items-center justify-center py-16;
+}
+.app__error {
+  @apply text-center py-12;
+}
+.app__retry {
+  @apply mt-4 px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors;
+}
+.app__empty {
+  @apply text-center py-16 text-gray-500;
+}
+.app__empty-hint {
+  @apply text-sm mt-2;
+}
+
+/* Spinner */
+.spinner {
+  @apply w-8 h-8 border-4 border-gray-200 border-t-primary-500 rounded-full animate-spin mb-4;
+}
+.spinner--small {
+  @apply w-4 h-4 border-2 border-gray-300 border-t-primary-500 rounded-full animate-spin;
+}
+
+/* Filters Panel */
+.filters {
+  @apply bg-white rounded-xl shadow-sm border border-gray-200 p-5 w-full lg:w-72 lg:sticky lg:top-24 lg:self-start flex-shrink-0;
+}
+.filters__header {
+  @apply flex items-center justify-between mb-4 pb-3 border-b border-gray-100;
+}
+.filters__title {
+  @apply text-lg font-semibold;
+}
+.filters__clear {
+  @apply text-sm text-primary-500 hover:text-primary-700 font-medium cursor-pointer transition-colors;
+}
+.filters__content {
+  @apply space-y-5;
+}
+
+/* CheckboxGroup (BEM) */
+.filter-checkbox__title {
+  @apply text-sm font-medium text-gray-700 mb-2.5;
+}
+.filter-checkbox__list {
+  @apply space-y-2.5;
+}
+
+.filter-checkbox__item {
+  @apply flex items-center gap-2.5 cursor-pointer select-none;
+}
+
+.filter-checkbox__input {
+  @apply sr-only;
+}
+
+.filter-checkbox__box {
+  @apply flex-shrink-0 w-5 h-5 rounded-md border-2 border-gray-300 
+    flex items-center justify-center transition-all duration-200 bg-white;
+}
+
+.filter-checkbox__box--checked {
+  @apply bg-primary-500 border-primary-500 shadow-sm;
+}
+
+.filter-checkbox__check {
+  @apply w-3.5 h-3.5 text-white;
+}
+
+/* Hover-эффект для всего элемента */
+.filter-checkbox__item:hover .filter-checkbox__box:not(.filter-checkbox__box--checked) {
+  @apply border-primary-300 bg-primary-50;
+}
+
+.filter-checkbox__label {
+  @apply text-sm text-gray-700 transition-colors;
+}
+.filter-checkbox__item:hover .filter-checkbox__label {
+  @apply text-gray-900;
+}
+
+/* RangeSlider (BEM) */
+.filter-range__title {
+  @apply text-sm font-medium text-gray-700 mb-3;
+}
+
+.filter-range__track {
+  @apply relative h-8 mb-4 select-none; /* select-none убирает выделение текста при драге */
+}
+
+.filter-range__bg {
+  @apply absolute top-1/2 -translate-y-1/2 w-full h-1.5 bg-gray-200 rounded-full;
+}
+
+.filter-range__progress {
+  @apply absolute top-1/2 -translate-y-1/2 h-1.5 bg-primary-500 rounded-full pointer-events-none z-10;
+}
+
+/* Сам инпут: именно здесь должен жить cursor */
+.filter-range__thumb {
+  @apply absolute top-1/2 -translate-y-1/2 left-0 w-full h-4 m-0 appearance-none bg-transparent pointer-events-none z-20 cursor-grab;
+}
+
+.filter-range__thumb:active {
+  @apply cursor-grabbing; /* 👈 Срабатывает мгновенно при зажатии ЛКМ */
+}
+
+/* Убираем стандартный трек */
+.filter-range__thumb::-webkit-slider-runnable-track {
+  @apply h-1.5 bg-transparent;
+}
+
+/* Визуал ползунка (без cursor, чтобы не конфликтовал) */
+.filter-range__thumb::-webkit-slider-thumb {
+  @apply appearance-none w-5 h-5 mt-[-8px] bg-white border-2 border-primary-500 rounded-full shadow-md transition-colors duration-100 pointer-events-auto;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Цвет при зажатии */
+.filter-range__thumb:active::-webkit-slider-thumb {
+  @apply border-primary-700 bg-primary-50;
+}
+
+.filter-range__values {
+  @apply flex items-center justify-between text-xs text-gray-500 font-medium;
+}
+
+/* SelectFilter (BEM) */
+.filter-select__title {
+  @apply text-sm font-medium text-gray-700 mb-2;
+}
+.filter-select__control {
+  @apply w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent appearance-none cursor-pointer;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 0.5rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+}
+
+/* Cards Grid */
+.cards-grid {
+  @apply grid gap-4 sm:grid-cols-2 xl:grid-cols-3;
+}
+
+/* ApartmentCard (BEM) */
+.card {
+  @apply bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden cursor-pointer transition-all duration-200 hover:shadow-md hover:-translate-y-0.5;
+  will-change: transform;
+  contain: layout style;
+}
+.card__image-wrapper {
+  @apply relative aspect-video overflow-hidden;
+}
+.card__image {
+  @apply w-full h-full object-cover transition-transform duration-300;
+}
+.card:hover .card__image {
+  @apply scale-105;
+}
+.card__badge {
+  @apply absolute top-3 left-3 px-2 py-0.5 text-xs font-medium rounded-full;
+}
+.card__badge--ready {
+  @apply bg-success-100 text-success-700;
+}
+.card__badge--construction {
+  @apply bg-warning-100 text-warning-700;
+}
+.card__content {
+  @apply p-4;
+}
+.card__top {
+  @apply flex justify-between items-start mb-1;
+}
+.card__building {
+  @apply font-semibold text-base leading-tight;
+}
+.card__price {
+  @apply font-bold text-primary-600 text-sm whitespace-nowrap ml-2;
+}
+.card__address {
+  @apply text-xs text-gray-500 mb-3;
+}
+.card__params {
+  @apply flex flex-wrap gap-3 mb-3 text-xs text-gray-600;
+}
+.card__param {
+  @apply flex items-center gap-1;
+}
+.card__param-icon {
+  @apply text-xs;
+}
+.card__layout {
+  @apply inline-block px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-md;
+}
+
+/* Popup (BEM) */
+.popup-overlay {
+  @apply fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in;
+}
+
+.popup {
+  @apply bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden relative animate-scale-in flex flex-col;
+}
+
+/* Крестик */
+.popup__close {
+  @apply absolute top-4 right-4 z-20 w-8 h-8 flex items-center justify-center bg-white/90 backdrop-blur rounded-full text-gray-500 hover:text-gray-900 hover:bg-white transition-colors shadow-sm cursor-pointer;
+}
+
+/* Галерея */
+.popup__gallery {
+  @apply relative flex-shrink-0;
+}
+.popup__gallery-main {
+  @apply w-full h-64 sm:h-80 object-cover;
+}
+.popup__gallery-thumbs {
+  @apply flex gap-2 p-4 overflow-x-auto pb-5;
+}
+.popup__gallery-thumb-wrapper {
+  @apply flex-shrink-0 rounded-lg overflow-hidden border-2 border-transparent transition-all duration-200 cursor-pointer;
+}
+.popup__gallery-thumb-wrapper--active {
+  @apply border-primary-500 shadow-md;
+}
+.popup__gallery-thumb {
+  @apply w-20 h-14 sm:w-24 sm:h-16 object-cover block;
+}
+
+/* Скролл-контейнер */
+.popup__scroll {
+  @apply flex-1 overflow-y-auto;
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db transparent;
+}
+.popup__scroll::-webkit-scrollbar {
+  @apply w-1.5;
+}
+.popup__scroll::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+.popup__scroll::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 rounded-full hover:bg-gray-400 transition-colors;
+}
+
+/* Инфо */
+.popup__info {
+  @apply p-6;
+}
+.popup__header {
+  @apply flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-3;
+}
+.popup__building {
+  @apply text-xl font-bold;
+}
+.popup__address {
+  @apply text-sm text-gray-500;
+}
+.popup__badge {
+  @apply px-3 py-1 text-sm font-medium rounded-full self-start;
+}
+.popup__badge--ready {
+  @apply bg-success-100 text-success-700;
+}
+.popup__badge--construction {
+  @apply bg-warning-100 text-warning-700;
+}
+.popup__price {
+  @apply text-2xl font-bold text-primary-600 mb-4;
+}
+.popup__description {
+  @apply text-gray-600 mb-5 leading-relaxed;
+}
+.popup__params {
+  @apply grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 border-t border-gray-100;
+}
+.popup__param-item {
+  @apply flex flex-col;
+}
+.popup__param-label {
+  @apply text-xs text-gray-400 uppercase tracking-wider mb-1;
+}
+.popup__param-value {
+  @apply font-semibold text-gray-900;
+}
+
+/* Responsive */
+@media (max-width: 1023px) {
+  .filters {
+    @apply w-full lg:static lg:top-auto;
+  }
+}
