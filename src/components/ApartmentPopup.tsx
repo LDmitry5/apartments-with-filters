@@ -14,13 +14,33 @@ const layoutLabels: Record<Apartment["layoutType"], string> = {
   penthouse: "Пентхаус",
 };
 
+// Gallery вынесен ВНЕ ApartmentPopup — компилятор доволен
+const Gallery: React.FC<{ apartment: Apartment }> = ({ apartment }) => {
+  const [index, setIndex] = useState(0);
+  const images = [apartment.mainImage, ...apartment.gallery];
+  const current = images[index] || apartment.mainImage;
+
+  return (
+    <div className="popup__gallery">
+      <img src={current} alt={apartment.buildingName} className="popup__gallery-main" />
+      <div className="popup__gallery-thumbs">
+        {images.map((img, i) => (
+          <button
+            key={i}
+            type="button"
+            className={`popup__gallery-thumb-wrapper ${i === index ? "popup__gallery-thumb-wrapper--active" : ""}`}
+            onClick={() => setIndex(i)}
+            aria-label={`Фото ${i + 1}`}>
+            <img src={img} alt={`Фото ${i + 1}`} className="popup__gallery-thumb" />
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 export const ApartmentPopup: React.FC<ApartmentPopupProps> = ({ apartment, onClose }) => {
   const overlayRef = useRef<HTMLDivElement>(null);
-  const [mainImage, setMainImage] = useState<string>("");
-
-  useEffect(() => {
-    if (apartment) setMainImage(apartment.mainImage);
-  }, [apartment]);
 
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
@@ -49,30 +69,12 @@ export const ApartmentPopup: React.FC<ApartmentPopupProps> = ({ apartment, onClo
       className="popup-overlay animate-fade-in"
       ref={overlayRef}
       onClick={(e) => e.target === overlayRef.current && onClose()}>
-      <div className="popup animate-scale-in" role="dialog" aria-modal="true">
-        {/* Крестик закрытия */}
+      {/* key={apartment.id} + вынесенный Gallery = сброс состояния без useEffect */}
+      <div className="popup animate-scale-in" role="dialog" aria-modal="true" key={apartment.id}>
         <button className="popup__close" onClick={onClose} aria-label="Закрыть">
           ✕
         </button>
-
-        {/* Галерея (не скроллится) */}
-        <div className="popup__gallery">
-          <img src={mainImage} alt={apartment.buildingName} className="popup__gallery-main" />
-          <div className="popup__gallery-thumbs">
-            {[apartment.mainImage, ...apartment.gallery].map((img, i) => (
-              <button
-                key={i}
-                type="button"
-                className={`popup__gallery-thumb-wrapper ${mainImage === img ? "popup__gallery-thumb-wrapper--active" : ""}`}
-                onClick={() => setMainImage(img)}
-                aria-label={`Фото ${i + 1}`}>
-                <img src={img} alt={`Фото ${i + 1}`} className="popup__gallery-thumb" />
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Скроллируемая область с данными */}
+        <Gallery apartment={apartment} />
         <div className="popup__scroll">
           <div className="popup__info">
             <div className="popup__header">
@@ -84,10 +86,8 @@ export const ApartmentPopup: React.FC<ApartmentPopupProps> = ({ apartment, onClo
                 {apartment.status === "ready" ? "Сдан" : "Строится"}
               </span>
             </div>
-
             <p className="popup__price">{priceFormatted}</p>
             <p className="popup__description">{apartment.description}</p>
-
             <div className="popup__params">
               <div className="popup__param-item">
                 <span className="popup__param-label">Комнаты</span>

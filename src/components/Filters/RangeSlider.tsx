@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 
 interface RangeSliderProps {
   title: string;
@@ -11,34 +11,27 @@ interface RangeSliderProps {
 }
 
 export const RangeSlider: React.FC<RangeSliderProps> = ({ title, min, max, step, value, unit, onChange }) => {
-  const [localValue, setLocalValue] = useState(value);
   const [isDragging, setIsDragging] = useState(false);
+  const [localValue, setLocalValue] = useState(value);
 
-  // Синхронизация с пропсами только когда пользователь не тянет
-  useEffect(() => {
-    if (!isDragging) setLocalValue(value);
-  }, [value, isDragging]);
+  // Derived state: вычисляем отображаемое значение прямо в рендере
+  const displayValue = isDragging ? localValue : value;
 
-  // Мгновенное обновление UI при движении
   const handleMinChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = Math.min(Number(e.target.value), localValue[1] - step);
-    setLocalValue([val, localValue[1]]);
+    const val = Math.min(Number(e.target.value), displayValue[1] - step);
+    setLocalValue([val, displayValue[1]]);
   };
 
   const handleMaxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = Math.max(Number(e.target.value), localValue[0] + step);
-    setLocalValue([localValue[0], val]);
+    const val = Math.max(Number(e.target.value), displayValue[0] + step);
+    setLocalValue([displayValue[0], val]);
   };
 
-  // Запрос к API только при отпускании мыши/пальца
   const handleRelease = useCallback(() => {
     setIsDragging(false);
     onChange(localValue);
   }, [localValue, onChange]);
 
-  const handleDragStart = () => setIsDragging(true);
-
-  // Глобальный слушатель на случай, если курсор ушёл за пределы трека
   useEffect(() => {
     const handleGlobalUp = () => {
       if (isDragging) handleRelease();
@@ -51,27 +44,24 @@ export const RangeSlider: React.FC<RangeSliderProps> = ({ title, min, max, step,
     };
   }, [isDragging, handleRelease]);
 
-  // Проценты для позиционирования прогресс-бара
-  const minPercent = ((localValue[0] - min) / (max - min)) * 100;
-  const maxPercent = ((localValue[1] - min) / (max - min)) * 100;
+  const minPercent = ((displayValue[0] - min) / (max - min)) * 100;
+  const maxPercent = ((displayValue[1] - min) / (max - min)) * 100;
 
   return (
     <div className="filter-range">
       <h3 className="filter-range__title">{title}</h3>
-
-      <div className="filter-range__track">
+      <div className={`filter-range__track ${isDragging ? "cursor-grabbing" : "cursor-grab"}`}>
         <div className="filter-range__bg" />
         <div className="filter-range__progress" style={{ left: `${minPercent}%`, right: `${100 - maxPercent}%` }} />
-
         <input
           type="range"
           min={min}
           max={max}
           step={step}
-          value={localValue[0]}
+          value={displayValue[0]}
           onChange={handleMinChange}
-          onMouseDown={handleDragStart}
-          onTouchStart={handleDragStart}
+          onMouseDown={() => setIsDragging(true)}
+          onTouchStart={() => setIsDragging(true)}
           className="filter-range__thumb filter-range__thumb--min"
           aria-label={`Минимум ${title}`}
         />
@@ -80,23 +70,22 @@ export const RangeSlider: React.FC<RangeSliderProps> = ({ title, min, max, step,
           min={min}
           max={max}
           step={step}
-          value={localValue[1]}
+          value={displayValue[1]}
           onChange={handleMaxChange}
-          onMouseDown={handleDragStart}
-          onTouchStart={handleDragStart}
+          onMouseDown={() => setIsDragging(true)}
+          onTouchStart={() => setIsDragging(true)}
           className="filter-range__thumb filter-range__thumb--max"
           aria-label={`Максимум ${title}`}
         />
       </div>
-
       <div className="filter-range__values">
         <span className="tabular-nums">
-          {localValue[0]}
+          {displayValue[0]}
           {unit}
         </span>
         <span className="text-gray-300">—</span>
         <span className="tabular-nums">
-          {localValue[1]}
+          {displayValue[1]}
           {unit}
         </span>
       </div>
