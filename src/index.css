@@ -138,18 +138,49 @@ body {
 /* Filters Panel */
 .filters {
   @apply bg-white rounded-xl shadow-sm border border-gray-200 p-5 w-full lg:w-72 lg:sticky lg:top-24 lg:self-start flex-shrink-0;
+  @apply lg:max-h-[calc(100vh-8rem)]; /* 👈 Ограничиваем высоту на десктопе */
+  @apply lg:flex lg:flex-col;
 }
+
 .filters__header {
-  @apply flex items-center justify-between mb-4 pb-3 border-b border-gray-100;
+  @apply flex items-center justify-between mb-4 pb-3 border-b border-gray-100 flex-shrink-0;
 }
+
 .filters__title {
   @apply text-lg font-semibold;
 }
 .filters__clear {
   @apply text-sm text-primary-500 hover:text-primary-700 font-medium cursor-pointer transition-colors;
 }
+
+/* 👇 Контент фильтров скроллится независимо */
 .filters__content {
-  @apply space-y-5;
+  @apply space-y-5 overflow-y-auto overflow-x-hidden pr-1 -mr-1;
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db transparent;
+}
+
+/* Тонкий скроллбар для фильтров */
+.filters__content::-webkit-scrollbar {
+  @apply w-1.5;
+}
+.filters__content::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+.filters__content::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 rounded-full hover:bg-gray-400 transition-colors;
+}
+
+/* Отступы внутри фильтров */
+.filter-checkbox,
+.filter-range,
+.filter-select {
+  @apply pb-2;
+}
+.filter-checkbox:last-child,
+.filter-range:last-child,
+.filter-select:last-child {
+  @apply pb-0;
 }
 
 /* CheckboxGroup (BEM) */
