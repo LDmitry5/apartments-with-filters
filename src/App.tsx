@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import type { Apartment, FilterState } from "./types/apartment";
 import { FiltersPanel } from "./components/Filters/FiltersPanel";
 import { ApartmentCard } from "./components/ApartmentCard";
@@ -7,15 +7,53 @@ import { apartments as ALL_APARTMENTS } from "./api/data";
 
 const API_URL = "/api/apartments";
 
-const buildQueryString = (filters: FilterState): string => {
-  const params = new URLSearchParams();
-  if (filters.rooms.length > 0) params.set("rooms", filters.rooms.join(","));
-  if (filters.area[0] !== 15 || filters.area[1] !== 200) params.set("area", `${filters.area[0]}-${filters.area[1]}`);
-  if (filters.floor[0] !== 1 || filters.floor[1] !== 30) params.set("floor", `${filters.floor[0]}-${filters.floor[1]}`);
-  if (filters.layoutType) params.set("layoutType", filters.layoutType);
-  if (filters.status) params.set("status", filters.status);
-  const query = params.toString();
-  return query ? `${API_URL}?${query}` : API_URL;
+// Выносим функцию загрузки ОТДЕЛЬНО — не внутри компонента
+const loadApartmentsData = async (
+  filters: FilterState,
+  setApartments: (data: Apartment[]) => void,
+  setLoading: (loading: boolean) => void,
+  setIsFiltering: (filtering: boolean) => void,
+  setError: (error: string | null) => void,
+) => {
+  setLoading(true);
+  setIsFiltering(true);
+  setError(null);
+  try {
+    if (import.meta.env.PROD) {
+      // Продакшен: клиентская фильтрация
+      await new Promise((res) => setTimeout(res, 300));
+      let filtered = [...ALL_APARTMENTS];
+      if (filters.rooms.length) filtered = filtered.filter((a) => filters.rooms.includes(a.rooms));
+      if (filters.layoutType) filtered = filtered.filter((a) => a.layoutType === filters.layoutType);
+      if (filters.status) filtered = filtered.filter((a) => a.status === filters.status);
+      if (filters.area[0] !== 15 || filters.area[1] !== 200)
+        filtered = filtered.filter((a) => a.area >= filters.area[0] && a.area <= filters.area[1]);
+      if (filters.floor[0] !== 1 || filters.floor[1] !== 30)
+        filtered = filtered.filter((a) => a.floor >= filters.floor[0] && a.floor <= filters.floor[1]);
+      setApartments(filtered);
+    } else {
+      // Разработка: запрос через MSW
+      const params = new URLSearchParams();
+      if (filters.rooms.length > 0) params.set("rooms", filters.rooms.join(","));
+      if (filters.area[0] !== 15 || filters.area[1] !== 200)
+        params.set("area", `${filters.area[0]}-${filters.area[1]}`);
+      if (filters.floor[0] !== 1 || filters.floor[1] !== 30)
+        params.set("floor", `${filters.floor[0]}-${filters.floor[1]}`);
+      if (filters.layoutType) params.set("layoutType", filters.layoutType);
+      if (filters.status) params.set("status", filters.status);
+      const query = params.toString();
+      const url = query ? `${API_URL}?${query}` : API_URL;
+
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Ошибка загрузки данных");
+      setApartments(await res.json());
+    }
+  } catch (e) {
+    setError(e instanceof Error ? e.message : "Неизвестная ошибка");
+  } finally {
+    setLoading(false);
+    setTimeout(() => setIsFiltering(false), 150);
+  }
 };
 
 export const App: React.FC = () => {
@@ -32,57 +70,24 @@ export const App: React.FC = () => {
     status: "",
   });
 
-  const filtersRef = useRef(filters);
-  useEffect(() => {
-    filtersRef.current = filters;
-  }, [filters]);
-
-  const loadApartments = async () => {
-    const currentFilters = filtersRef.current;
-    setLoading(true);
-    setIsFiltering(true);
-    setError(null);
-    try {
-      if (import.meta.env.PROD) {
-        await new Promise((res) => setTimeout(res, 300));
-        let filtered = [...ALL_APARTMENTS];
-        if (currentFilters.rooms.length) filtered = filtered.filter((a) => currentFilters.rooms.includes(a.rooms));
-        if (currentFilters.layoutType) filtered = filtered.filter((a) => a.layoutType === currentFilters.layoutType);
-        if (currentFilters.status) filtered = filtered.filter((a) => a.status === currentFilters.status);
-        if (currentFilters.area[0] !== 15 || currentFilters.area[1] !== 200)
-          filtered = filtered.filter((a) => a.area >= currentFilters.area[0] && a.area <= currentFilters.area[1]);
-        if (currentFilters.floor[0] !== 1 || currentFilters.floor[1] !== 30)
-          filtered = filtered.filter((a) => a.floor >= currentFilters.floor[0] && a.floor <= currentFilters.floor[1]);
-        setApartments(filtered);
-      } else {
-        const url = buildQueryString(currentFilters);
-        const res = await fetch(url);
-        if (!res.ok) throw new Error("Ошибка загрузки данных");
-        setApartments(await res.json());
-      }
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Неизвестная ошибка");
-    } finally {
-      setLoading(false);
-      setTimeout(() => setIsFiltering(false), 150);
-    }
-  };
-
-  const triggerLoad = useCallback(() => {
-    loadApartments();
-  }, []);
-
-  // setTimeout делает вызов асинхронным — компилятор пропускает
+  // Эффект: при изменении фильтров — загружаем данные
+  // setTimeout делает вызов асинхронным (React Compiler happy)
   useEffect(() => {
     const timer = setTimeout(() => {
-      triggerLoad();
+      loadApartmentsData(filters, setApartments, setLoading, setIsFiltering, setError);
     }, 0);
     return () => clearTimeout(timer);
-  }, [triggerLoad]);
+  }, [filters]);
 
+  // Обработчик фильтров только обновляет стейт
   const handleFilterChange = useCallback((newFilters: FilterState) => {
     setFilters(newFilters);
+    // Загрузка сработает автоматически через useEffect выше
   }, []);
+
+  const handleRetry = useCallback(() => {
+    loadApartmentsData(filters, setApartments, setLoading, setIsFiltering, setError);
+  }, [filters]);
 
   return (
     <div className="app">
@@ -102,7 +107,7 @@ export const App: React.FC = () => {
           {error && (
             <div className="app__error">
               <p>{error}</p>
-              <button className="app__retry" onClick={triggerLoad}>
+              <button className="app__retry" onClick={handleRetry}>
                 Повторить
               </button>
             </div>
